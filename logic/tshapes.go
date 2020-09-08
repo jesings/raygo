@@ -6,14 +6,16 @@ import (
 
 type Sphere struct {
     center Vec3
-    radius float32
-    radiusq float32
+    radius, radiusq float32
+    transparency, reflection float32
     //surface, emission color, transparency, reflectivity
 }
 
 type Shape interface {
     Intersect(incidence, origin Vec3, rd0, rd1 *float32) bool
     Normal(intersection Vec3) Vec3
+    Transparency() float32
+    Reflection() float32
 }
 
 func (s Sphere)Intersect(incidence, origin Vec3, rd0, rd1 *float32) bool {
@@ -33,4 +35,10 @@ func (s Sphere)Intersect(incidence, origin Vec3, rd0, rd1 *float32) bool {
 }
 func (s Sphere)Normal(intersection Vec3) Vec3 {
     return intersection.Sub(s.center)
+}
+func (s Sphere)Transparency() float32 {
+    return s.transparency
+}
+func (s Sphere)Reflection() float32 {
+    return s.reflection
 }

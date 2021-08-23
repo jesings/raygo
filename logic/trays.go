@@ -8,6 +8,14 @@ type Vec3 struct {
     x, y, z float32
 }
 
+func CtVec(x, y, z float32) Vec3 {
+    return Vec3{x, y, z}
+}
+
+func (v0 Vec3) IVals() (byte, byte, byte) {
+    return byte(v0.x), byte(v0.y), byte(v0.z)
+}
+
 func (v0 Vec3) Scale(factor float32) Vec3 {
     return Vec3{v0.x * factor, v0.y * factor, v0.z * factor}
 }

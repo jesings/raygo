@@ -33,7 +33,7 @@ func (s Sphere)Intersect(incidence, origin Vec3, rd0, rd1 *float32) bool {
         return false
     }
     r2 := dir.LenSq() - rdiff * rdiff
-    if r2 < s.radiusq {
+    if r2 > s.radiusq {
         return false
     }
     tdist := math32.Sqrt(s.radiusq - r2)

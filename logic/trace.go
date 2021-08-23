@@ -1,10 +1,11 @@
 package logic
 
 import (
+    "fmt"
     "github.com/chewxy/math32"
 )
 
-const TRACEDEPTH = 5
+const TRACEDEPTH = 2
 
 func mix(a, b, mix float32) float32 {
     return b * mix + a * (1. - mix)
@@ -34,9 +35,8 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
     intersection := origin.Add(incidence.Scale(prox))
     inorm := closeShape.Normal(intersection).Norm()
     var bias float32 = 1e-4
-    internal := incidence.Dot(inorm) > 0.0
     inside := false
-    if internal {
+    if incidence.Dot(inorm) > 0.0 {
       inorm = inorm.Neg()
       inside = true
     }
@@ -60,7 +60,7 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
       surfacecolor = reflected.Scale(fresnel).Add(refracted.Scale((1 - fresnel) * closeShape.Transparency())).Mul(closeShape.SurfaceColor())
     } else {
       for _, shape := range shapes {
-        if shape.EmissionColor().x > 0 {
+        if shape.EmissionColor().Len() > 0. {
           transmission := Vec3{1.,1.,1.}
           lightdir := shape.Distance(intersection).Norm()
           for _, shape2 := range shapes {
@@ -77,10 +77,11 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
           if possneg > noneg {
             noneg = possneg
           }
+          fmt.Printf("%+v %+v %+v %+v\n", surfacecolor, shape.SurfaceColor(), transmission, shape.EmissionColor());
           surfacecolor = surfacecolor.Add(shape.SurfaceColor().Mul(transmission).Scale(possneg).Mul(shape.EmissionColor()))
         }
       }
     }
 
-    return surfacecolor.Mul(closeShape.EmissionColor())
+    return surfacecolor.Add(closeShape.EmissionColor())
 }

@@ -26,6 +26,7 @@ func main() {
       logic.CtSphere(logic.CtVec(-5.5, 0, -15), 3, logic.CtVec(0.90, 0.90, 0.90), 1, 0.0, logic.CtVec(0.,0.,0.)),
       logic.CtSphere(logic.CtVec(0.0, 20, -30), 3, logic.CtVec(0.00, 0.00, 0.00), 0, 0.0, logic.CtVec(3.,3.,3.)));
 
+    fmt.Printf("%+v\n", shapes)
     //please panic if you die
     metadata := fmt.Sprintf("P6\n%d %d\n255\n", WIDTH, HEIGHT)
     img.WriteString(metadata)

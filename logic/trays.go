@@ -48,6 +48,14 @@ func (v0 Vec3) Len() float32 {
     return math32.Sqrt(v0.LenSq())
 }
 
+func (v0 Vec3) Clamp(f float32) Vec3 {
+    var x, y, z float32 = f, f, f
+    if v0.x < x {x = v0.x}
+    if v0.y < y {y = v0.y}
+    if v0.z < z {z = v0.z}
+    return Vec3{x, y, z}
+}
+
 func (v0 Vec3) Norm() Vec3 {
     nor := v0.LenSq()
     if(nor > 0.0) {

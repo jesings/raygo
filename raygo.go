@@ -26,8 +26,6 @@ func main() {
       logic.CtSphere(logic.CtVec(-5.5, 0, -15), 3, logic.CtVec(0.90, 0.90, 0.90), 1, 0.0, logic.CtVec(0.,0.,0.)),
       logic.CtSphere(logic.CtVec(0.0, 20, -30), 3, logic.CtVec(0.00, 0.00, 0.00), 0, 0.0, logic.CtVec(3.,3.,3.)));
 
-    fmt.Printf("%+v\n", shapes)
-    //please panic if you die
     metadata := fmt.Sprintf("P6\n%d %d\n255\n", WIDTH, HEIGHT)
     img.WriteString(metadata)
     var pixels [WIDTH * HEIGHT * 3]byte
@@ -38,7 +36,7 @@ func main() {
         xx := (2. * ((float32(x % WIDTH) + 0.5) * INVWIDTH) - 1.) * angle * ASPECTRATIO
         yy := (1. - 2. * ((float32(x / WIDTH) + 0.5) * INVHEIGHT)) * angle
         raydir := logic.CtVec(xx, yy, -1.).Norm()
-        colors := logic.Trace(logic.CtVec(0.,0.,0.), raydir, shapes, 0).Scale(255.)
+        colors := logic.Trace(logic.CtVec(0.,0.,0.), raydir, shapes, 0).Scale(255.).Clamp(255.)
 
         pixels[offset], pixels[offset + 1], pixels[offset + 2] = colors.IVals()
         offset += 3

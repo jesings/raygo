@@ -1,7 +1,6 @@
 package logic
 
 import (
-    "fmt"
     "github.com/chewxy/math32"
 )
 
@@ -30,7 +29,7 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
         }
     }
     if closeShape == nil {
-        return Vec3{0.,0.,0.}/*background color*/
+        return Vec3{2.,2.,2.}/*background color*/
     }
     intersection := origin.Add(incidence.Scale(prox))
     inorm := closeShape.Normal(intersection).Norm()
@@ -40,7 +39,7 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
       inorm = inorm.Neg()
       inside = true
     }
-    if ((closeShape.Transparency() > 0.0) || (closeShape.Reflection() > 0.0)) && depth != TRACEDEPTH {
+    if ((closeShape.Transparency() > 0.0) || (closeShape.Reflection() > 0.0)) && depth < TRACEDEPTH {
       fratio := -incidence.Dot(inorm)
       facer := 1 - fratio
       fresnel := mix(facer * facer * facer, 1, 0.1)
@@ -48,37 +47,32 @@ func Trace(origin, incidence Vec3, shapes []Shape, depth int32) Vec3 {
       reflected := Trace(intersection.Add(inorm.Scale(bias)), reflray, shapes, depth + 1);
       refracted := Vec3{0.,0.,0.}
       if closeShape.Transparency() > 0.0 {
-        var eta float32 = 1.1
-        if !inside {
-          eta = 1/1.1
+        var eta float32 = 1./1.1
+        if inside {
+          eta = 1.1
         }
-        cosi := -intersection.Dot(reflray)
+        cosi := -intersection.Dot(incidence)
         k := 1 - eta * eta * (1 - cosi * cosi)
-        refractray := reflray.Scale(eta).Add(inorm.Scale(eta * cosi - math32.Sqrt(k))).Norm()
+        refractray := incidence.Scale(eta).Add(inorm.Scale(eta * cosi - math32.Sqrt(k))).Norm()
         refracted = Trace(intersection.Sub(inorm.Scale(bias)), refractray, shapes, depth + 1)
       }
       surfacecolor = reflected.Scale(fresnel).Add(refracted.Scale((1 - fresnel) * closeShape.Transparency())).Mul(closeShape.SurfaceColor())
     } else {
       for _, shape := range shapes {
-        if shape.EmissionColor().Len() > 0. {
+        if shape.EmissionColor().LenSq() > 0. {
           transmission := Vec3{1.,1.,1.}
           lightdir := shape.Distance(intersection).Norm()
           for _, shape2 := range shapes {
             if shape != shape2 {
               var f0, f1 float32
-              if shape2.Intersect(intersection.Add(inorm.Scale(bias)), lightdir, &f0, &f1) {
+              if shape2.Intersect(lightdir, intersection.Add(inorm.Scale(bias)), &f0, &f1) {
                 transmission = Vec3{0.,0.,0.}
                 break
               }
             }
           }
-          var noneg float32 = 0.
-          possneg := inorm.Dot(lightdir)
-          if possneg > noneg {
-            noneg = possneg
-          }
-          fmt.Printf("%+v %+v %+v %+v\n", surfacecolor, shape.SurfaceColor(), transmission, shape.EmissionColor());
-          surfacecolor = surfacecolor.Add(shape.SurfaceColor().Mul(transmission).Scale(possneg).Mul(shape.EmissionColor()))
+          surfacecolor = surfacecolor.Add(closeShape.SurfaceColor().Mul(transmission).Scale(
+                            math32.Max(inorm.Dot(lightdir), 0.)).Mul(shape.EmissionColor()))
         }
       }
     }
